@@ -87,9 +87,13 @@ dialog{border:0;padding:0;background:#fffdf8;max-width:min(94vw,600px);max-heigh
 .venue-map{margin:28px 0 0;border-radius:12px;overflow:hidden;border:1px solid #dce3d6;text-align:left}.venue-map .root_daum_roughmap{width:100%!important;border:0!important;box-sizing:border-box}.venue-map .wrap_map{width:100%!important}
 
 .venue-map .root_daum_roughmap > .cont,.venue-map .wrap_controllers{display:none!important}
+
+.music-toggle{position:fixed;right:max(14px,calc((100vw - 500px)/2 + 14px));bottom:18px;z-index:30;border:1px solid #e5d3a5;border-radius:28px;background:#fff8e8f5;color:#796440;padding:12px 17px;box-shadow:0 3px 14px #59441a18;font:12px 'Noto Sans KR',sans-serif;min-height:44px}.music-toggle[aria-pressed="true"]{background:#ffedba}
 </style>
 </head>
 <body>
+<audio id="birthday-music" src="assets/birthday-music-box.wav" preload="auto" autoplay loop></audio>
+<button class="music-toggle" id="music-toggle" type="button" aria-pressed="false" aria-label="생일 축하 오르골 음악 켜기">♫ 음악 켜기</button>
 <main>
 <nav aria-label="초대장 메뉴"><a href="#invitation">초대의 글</a><a href="#gallery">이로의 순간</a><a href="#date">날짜</a><a href="#location">오시는 길</a></nav>
 <header class="hero" style="text-align:center">
@@ -106,6 +110,13 @@ dialog{border:0;padding:0;background:#fffdf8;max-width:min(94vw,600px);max-heigh
 <script charset="UTF-8" class="daum_roughmap_loader_script" src="https://t1.kakaocdn.net/kakaomapweb/roughmap/loader/prod/roughmapLoader.js"></script>
 <script>if(window.daum&&daum.roughmap){new daum.roughmap.Lander({timestamp:"1793667678312",key:"4dbsen4vxzr",mapWidth:"360",mapHeight:"260"}).render();}</script>
 <dialog id="lightbox"><div class="lightbox-bar"><span>이로의 사랑스러운 순간</span><button id="close-photo" aria-label="사진 닫기">×</button></div><img id="large-photo" alt="이로 사진 크게 보기"></dialog><script>
+const music=document.getElementById('birthday-music');
+const musicButton=document.getElementById('music-toggle');
+music.volume=.35;
+function syncMusic(){const playing=!music.paused;musicButton.textContent=playing?'♫ 음악 끄기':'♫ 음악 켜기';musicButton.setAttribute('aria-pressed',String(playing));musicButton.setAttribute('aria-label',playing?'생일 축하 오르골 음악 끄기':'생일 축하 오르골 음악 켜기');}
+music.addEventListener('play',syncMusic);music.addEventListener('pause',syncMusic);
+musicButton.addEventListener('click',async()=>{if(music.paused){try{await music.play();}catch{toast('음악을 재생할 수 없습니다. 다시 눌러 주세요.');}}else{music.pause();}syncMusic();});
+music.play().then(syncMusic).catch(syncMusic);
 const lightbox=document.getElementById('lightbox');document.querySelectorAll('[data-photo]').forEach(button=>button.addEventListener('click',()=>{document.getElementById('large-photo').src=button.dataset.photo;lightbox.showModal()}));document.getElementById('close-photo').onclick=()=>lightbox.close();lightbox.addEventListener('click',e=>{if(e.target===lightbox)lightbox.close()});
 
 function updateCountdown(){const p=new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Seoul',year:'numeric',month:'numeric',day:'numeric'}).formatToParts(new Date());const v=Object.fromEntries(p.map(x=>[x.type,x.value]));const d=Math.round((Date.UTC(2026,11,13)-Date.UTC(+v.year,+v.month-1,+v.day))/86400000);document.getElementById('countdown').textContent=d>0?'이로의 첫 생일까지 '+d+'일 남았습니다.':d===0?'오늘은 이로의 첫 번째 생일잔치 날입니다.':'이로의 첫 생일을 함께해 주셔서 감사합니다.'}updateCountdown();
